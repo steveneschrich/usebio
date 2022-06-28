@@ -5,16 +5,10 @@
 \title{Install the ESTIMATE software (it is in a custom location)}
 \usage{
 install_estimate()
-
-install_estimate()
 }
 \value{
-Invisible NULL (from install.packages).
-
 Invisible NULL (from install.packages).
 }
 \description{
 Install the ESTIMATE software (it is in a custom location)
-
-Install the XCell software (it is in a custom location)
 }

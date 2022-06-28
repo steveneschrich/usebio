@@ -16,6 +16,8 @@ An ExpressionSet representing the GCT data.
 Read a GCT-formatted file into an ExpressionSet object.
 }
 \examples{
+\dontrun{
 eset<-readGCT("/tmp/data.gct")
+}
 
 }

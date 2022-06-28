@@ -2,7 +2,9 @@
 #' an ExpressionSet.
 #'
 #' @param eset An affy gene expression dataset.
-#' @param gene_symbols A list of gene symbols (if not supplied in annotation for ExpressionSet).
+#' @param platform If missing, affymetrix
+#' @param ... Any other parameters to pass to estimate
+#'
 #' @return An expression set consisting of estimate scores.
 #' @export
 #'
@@ -11,7 +13,7 @@
 #' estimate_scores<-runEstimate(eset)
 #' }
 runEstimate<-function(eset, platform, ...) {
-  stopifnot(!is.ExpressionSet(eset))
+  stopifnot(any(class(eset) %in% "ExpressionSet"))
 
   if (missing(platform)) platform<-"affymetrix"
 
@@ -25,9 +27,11 @@ runEstimate<-function(eset, platform, ...) {
   writeGCT(eset_common_genes, estimate_exprs_in_file)
 
   estimate_scores_file <-tempfile(pattern="estimate-out", fileext=".gct")
-  estimateScore(input.ds=estimate_exprs_in_file,
+  rlang::check_installed("estimate", reason = "to use `estimateScore()`")
+  estimate::estimateScore(input.ds=estimate_exprs_in_file,
                 output.ds=estimate_scores_file,
-                platform=platform)
+                platform=platform,
+                ...)
 
   results<-readGCT(estimate_scores_file)
 

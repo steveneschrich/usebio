@@ -15,6 +15,8 @@ writeGCT(eset, file)
 Write an ExpressionSet to a GCT-formatted output file.
 }
 \examples{
+\dontrun{
 writeGCT(eset, file="/tmp/exprs.gct")
+}
 
 }

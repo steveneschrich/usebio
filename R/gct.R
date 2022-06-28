@@ -6,15 +6,16 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' eset<-readGCT("/tmp/data.gct")
+#' }
 #'
 readGCT<-function(file) {
-  require(Biobase)
 
   stopifnot(typeof(file)=="character")
 
   # A GCT is a matrix (after line 2), but with two identifier columns
-  d<-read.table(file=file,
+  d<-utils::read.table(file=file,
                 header=TRUE,
                 row.names=1,
                 sep="\t",
@@ -33,7 +34,7 @@ readGCT<-function(file) {
                            stringsAsFactors = FALSE
   )
   res<-Biobase::ExpressionSet(assayData=vals,
-                              featureData=AnnotatedDataFrame(descriptions))
+                              featureData=Biobase::AnnotatedDataFrame(descriptions))
 
   return(res)
 }
@@ -48,16 +49,18 @@ readGCT<-function(file) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' writeGCT(eset, file="/tmp/exprs.gct")
+#' }
 #'
 writeGCT<-function(eset, file) {
   stopifnot(class(eset)=="ExpressionSet")
 
   # GCT requires two columns: a NAME and Description. They will both be the
   # featureNames from the ExpressionSet.
-  output<-data.frame(NAME=featureNames(eset),
-                     Description=featureNames(eset),
-                     exprs(eset),
+  output<-data.frame(NAME=Biobase::featureNames(eset),
+                     Description=Biobase::featureNames(eset),
+                     Biobase::exprs(eset),
                      stringsAsFactors = FALSE,
                      check.names = FALSE)
 
@@ -67,9 +70,9 @@ writeGCT<-function(eset, file) {
   # This bit writes the header first, then appends the data. The warnings are
   # suppressed for the second part, since it's a different size. The first one
   # may fail due to file not being created, so the suppress may be ok.
-  write.table(hdr, file=file, quote=F, sep="\t", row.names=FALSE, col.names=FALSE)
+  utils::write.table(hdr, file=file, quote=F, sep="\t", row.names=FALSE, col.names=FALSE)
   suppressWarnings(
-    write.table(output, file=file, append=TRUE, quote=F, sep="\t",row.names=FALSE)
+    utils::write.table(output, file=file, append=TRUE, quote=F, sep="\t",row.names=FALSE)
   )
 
 

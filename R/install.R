@@ -9,7 +9,7 @@
 install_estimate<-function() {
 
   rforge <- "http://r-forge.r-project.org"
-  install.packages("estimate", repos=rforge, dependencies=TRUE)
+  utils::install.packages("estimate", repos=rforge, dependencies=TRUE)
 }
 
 
@@ -21,7 +21,7 @@ install_estimate<-function() {
 #' @export
 #'
 #' @examples
-install_estimate<-function() {
+install_xcell<-function() {
 
   devtools::install_github('dviraran/xCell')
 }

@@ -10,7 +10,9 @@ runEstimate(eset, platform, ...)
 \arguments{
 \item{eset}{An affy gene expression dataset.}
 
-\item{gene_symbols}{A list of gene symbols (if not supplied in annotation for ExpressionSet).}
+\item{platform}{If missing, affymetrix}
+
+\item{...}{Any other parameters to pass to estimate}
 }
 \value{
 An expression set consisting of estimate scores.
