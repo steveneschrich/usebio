@@ -24,3 +24,7 @@ Imports:
     tximport
 Suggests:
  estimate
+Remotes:
+  steveneschrich/affyutils,
+  bioc::Biobase,
+  bioc::SummarizedExperiment

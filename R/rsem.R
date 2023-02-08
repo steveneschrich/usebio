@@ -110,11 +110,14 @@ import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
 #' }
 import_rsem <- function(files, sample_names=NULL) {
 
+  # If there were no sample names, use the basename of the given files
+  if ( is.null(sample_names) )
+    sample_names <- basename(files)
+
  tximport::tximport(files, type = "rsem", txIn = FALSE, txOut = FALSE) |>
     purrr::map(function(.x) {
-      if ( is.matrix(.x) ) {
-        colnames(.x) <- ifelse(is.null(sample_names), basename(files), sample_names)
-      }
+      if ( is.matrix(.x) )
+        colnames(.x) <- sample_names
       .x
     }) |>
     remove_empty_rows_from_rsem()
