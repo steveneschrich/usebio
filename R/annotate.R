@@ -44,4 +44,6 @@ annotate_ensembl <- function(x) {
     gene_annotation
   )
 
+  x
+
 }
