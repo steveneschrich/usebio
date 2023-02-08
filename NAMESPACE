@@ -2,6 +2,7 @@
 
 export(find_rsem_files)
 export(import_rsem)
+export(import_rsem_as_DESeqDataSet)
 export(import_rsem_as_ExpressionSet)
 export(install_estimate)
 export(install_xcell)
