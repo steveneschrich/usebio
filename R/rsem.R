@@ -52,6 +52,42 @@ import_rsem_as_ExpressionSet <- function(sample_table, formula = ~1, use_log = T
 }
 
 
+#' Title
+#'
+#'  [SummarizedExperiment::SummarizedExperiment] object (Counts, Normalized Counts and TPM).
+#' @param sample_table A data.frame of annotations and filenames
+#' @param formula A formula for DESeq (default is ~1)
+#'
+#' @return A [SummarizedExperiment::SummarizedExperiment] representing the RSEM
+#' data (with assays for counts and TPM).
+#'
+#' @export
+#'
+#' @examples
+import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
+  stopifnot(utils::hasName(sample_table, "filename"))
+
+  txi.rsem <- import_rsem(sample_table$filename)
+  dds <- normalize_rsem(txi.rsem, sample_table, formula)
+
+  # NB: The RSEM data does not have column names, so we need to label these
+  # and use the sample_table sample names (or basename) as the rownames.
+  if ( !utils::hasName(sample_table, "sample")) {
+    sample_table <- sample_table |>
+      dplyr::mutate(sample = stringr::str_remove(basename(sample_table$filename), ".genes.results"))
+  }
+
+  SummarizedExperiment::assays(dds)$TPM <- txi.rsem$abundance  |>
+    magrittr::set_colnames(sample_table$sample)
+
+
+
+  dds
+
+}
+
+
+
 #' Import RSEM data using tximport
 #'
 #' @description Import raw RSEM data into a list of quantifications.
