@@ -31,11 +31,16 @@ annotate_ensembl <- function(x) {
 
   # Since it is likely not a 1:1, select the lowest ENTREZID entry associated with ENSEMBL
   gene_annotation <- gene_annotation |>
+    dplyr::mutate(rn = dplyr::row_number()) |>
     dplyr::group_by(.data$ENSEMBL) |>
-    dplyr::arrange(.data$ENTREZID) |>
-    dplyr::slice_head(n=1)
+    dplyr::slice_min(n=1, order_by=.data$ENTREZID, with_ties = FALSE) |>
+    dplyr::arrange(rn) |>
+    dplyr::select(-rn)
 
   # Need to make sure the mapping went correctly.
+  stopifnot(length(ensembl_ids) == nrow(gene_annotation))
+
+  # Now we need to verify rows match up
   stopifnot(all(ensembl_ids== gene_annotation$ENSEMBL))
 
   # Create rowData annotation
