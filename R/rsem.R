@@ -113,7 +113,7 @@ import_rsem <- function(files, sample_names=NULL) {
  tximport::tximport(files, type = "rsem", txIn = FALSE, txOut = FALSE) |>
     purrr::map(function(.x) {
       if ( is.matrix(.x) ) {
-        colnames(.x) <- ifelse(is.null(sample_names, basename(files), sample_names))
+        colnames(.x) <- ifelse(is.null(sample_names), basename(files), sample_names)
       }
       .x
     }) |>
