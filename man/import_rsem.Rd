@@ -4,10 +4,12 @@
 \alias{import_rsem}
 \title{Import RSEM data using tximport}
 \usage{
-import_rsem(files)
+import_rsem(files, sample_names = NULL)
 }
 \arguments{
 \item{files}{A character vector of filenames to load.}
+
+\item{sample_names}{Optional character vector of sample names to use for files}
 }
 \value{
 A list (see \code{\link[tximport:tximport]{tximport::tximport()}}) of matrices containing RSEM data.

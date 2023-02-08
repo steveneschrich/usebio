@@ -61,29 +61,28 @@ import_rsem_as_ExpressionSet <- function(sample_table, formula = ~1, use_log = T
 #' @return A [SummarizedExperiment::SummarizedExperiment] representing the RSEM
 #' data (with assays for counts and TPM).
 #'
+#' @importFrom rlang .data
+#'
 #' @export
 #'
 #' @examples
 import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
   stopifnot(utils::hasName(sample_table, "filename"))
 
-  txi.rsem <- import_rsem(sample_table$filename)
-  dds <- normalize_rsem(txi.rsem, sample_table, formula)
-
   # NB: The RSEM data does not have column names, so we need to label these
   # and use the sample_table sample names (or basename) as the rownames.
   if ( !utils::hasName(sample_table, "sample")) {
     sample_table <- sample_table |>
-      dplyr::mutate(sample = stringr::str_remove(basename(sample_table$filename), ".genes.results"))
+      dplyr::mutate(sample = stringr::str_remove(basename(.data$filename), ".genes.results"))
   }
+
+  txi.rsem <- import_rsem(sample_table$filename, sample_names = sample_table$sample)
+  dds <- normalize_rsem(txi.rsem, sample_table, formula)
 
   SummarizedExperiment::assays(dds)$TPM <- txi.rsem$abundance  |>
     magrittr::set_colnames(sample_table$sample)
 
-
-
   dds
-
 }
 
 
@@ -100,6 +99,7 @@ import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
 #' @note This function is focused on gene-level RSEM data, not transcript-level.
 #'
 #' @param files A character vector of filenames to load.
+#' @param sample_names Optional character vector of sample names to use for files
 #'
 #' @return A list (see [tximport::tximport()]) of matrices containing RSEM data.
 #' @export
@@ -108,12 +108,12 @@ import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
 #' \dontrun{
 #' import_rsem(c("foo.txt","bar.txt"))
 #' }
-import_rsem <- function(files) {
+import_rsem <- function(files, sample_names=NULL) {
 
  tximport::tximport(files, type = "rsem", txIn = FALSE, txOut = FALSE) |>
     purrr::map(function(.x) {
       if ( is.matrix(.x) ) {
-        colnames(.x) <- basename(files)
+        colnames(.x) <- ifelse(is.null(sample_names, basename(files), sample_name))
       }
       .x
     }) |>
