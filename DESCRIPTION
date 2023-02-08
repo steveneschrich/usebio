@@ -16,8 +16,10 @@ Imports:
     devtools,
     dplyr,
     magrittr,
+    purrr,
     rlang,
     stringr,
+    SummarizedExperiment,
     tibble,
     tximport
 Suggests:

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rsem.R
 \name{import_rsem_as_ExpressionSet}
 \alias{import_rsem_as_ExpressionSet}
-\title{Title}
+\title{Import RSEM as ExpressionSet}
 \usage{
 import_rsem_as_ExpressionSet(sample_table, formula = ~1, use_log = TRUE)
 }

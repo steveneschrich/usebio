@@ -1,5 +1,5 @@
 
-#' Title
+#' Import RSEM as ExpressionSet
 #'
 #'  [Biobase::ExpressionSet] object (Counts, Normalized Counts and TPM).
 #' @param sample_table A data.frame of annotations and filenames
@@ -52,7 +52,7 @@ import_rsem_as_ExpressionSet <- function(sample_table, formula = ~1, use_log = T
 }
 
 
-#' Title
+#' Import RSEM as SummarizedExperiment
 #'
 #'  [SummarizedExperiment::SummarizedExperiment] object (Counts, Normalized Counts and TPM).
 #' @param sample_table A data.frame of annotations and filenames
@@ -111,6 +111,12 @@ import_rsem_as_DESeqDataSet <- function(sample_table, formula = ~1) {
 import_rsem <- function(files) {
 
  tximport::tximport(files, type = "rsem", txIn = FALSE, txOut = FALSE) |>
+    purrr::map(function(.x) {
+      if ( is.matrix(.x) ) {
+        colnames(.x) <- basename(files)
+      }
+      .x
+    }) |>
     remove_empty_rows_from_rsem()
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rsem.R
 \name{import_rsem_as_DESeqDataSet}
 \alias{import_rsem_as_DESeqDataSet}
-\title{Title}
+\title{Import RSEM as SummarizedExperiment}
 \usage{
 import_rsem_as_DESeqDataSet(sample_table, formula = ~1)
 }
