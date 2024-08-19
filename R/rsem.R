@@ -86,7 +86,7 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
     }
   } else {
     # the sample_table is just a list of files (or a directory)
-    if ( length(sample_table == 1) & fs::is_dir(sample_table) ) {
+    if ( length(sample_table == 1) && all(fs::is_dir(sample_table)) ) {
       sample_table <- tibble::tibble(
         filename = find_rsem_files(sample_table, which = ifelse(txIn, "isoforms","genes"))
       )
@@ -151,7 +151,7 @@ import_rsem <- function(files = ".", sample_names = NULL, txIn = FALSE, txOut = 
   # Select either gene-level or isoform-level input/output
   which_input <- ifelse(txIn, "isoforms", "genes")
   # If files is length 1 and a directory, list the files.
-  if ( length(files) == 1 && fs::is_dir(files) ) {
+  if ( length(files) == 1 && all(fs::is_dir(files) )) {
     files <- find_rsem_files(dir = files, which = which_input)
   }
   # If there were no sample names, use the basename of the given files
@@ -161,7 +161,7 @@ import_rsem <- function(files = ".", sample_names = NULL, txIn = FALSE, txOut = 
   # If we are using txIn=TRUE (transcript-level) and output is gene level (txOut=FALSE),
   # assemble the transcript/gene mapping by pre-loading all data to find the mappings.
   # This is super-inefficient.
-  if ( txIn & !txOut ) {
+  if ( txIn && !txOut ) {
     tx2gene <- get_tx2gene_mapping(files)
     x <- tximport::tximport(files, type="rsem", txIn =txIn, txOut = txOut, tx2gene = tx2gene)
   } else {
@@ -273,7 +273,7 @@ add_colnames <- function(x, colnames) {
 }
 
 get_tx2gene_mapping <- function(files = ".") {
-  if ( length(files) == 1 & fs::is_dir(files)) {
+  if ( length(files) == 1 && all(fs::is_dir(files))) {
     files <- find_rsem_files(files, which = "isoforms")
   }
 
