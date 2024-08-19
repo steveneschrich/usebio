@@ -4,12 +4,21 @@
 \alias{find_rsem_files}
 \title{Find RSEM files to load}
 \usage{
-find_rsem_files(dir)
+find_rsem_files(dir, which = c("genes", "isoforms"))
 }
 \arguments{
 \item{dir}{A directory to look in}
+
+\item{which}{Select either 'genes' or 'isoforms' for corresponding RSEM outputs}
+}
+\value{
+A character vector of full paths to RSEM output files
 }
 \description{
-Identify files ending with \code{.genes.results} as RSEM files suitable for loading (with full
+Find RSEM files ending with appropriate extensions for loading.
+}
+\details{
+Identify files ending with \code{.genes.results} or \code{.isoforms.results} as RSEM
+files suitable for loading (with full
 pathname).
 }

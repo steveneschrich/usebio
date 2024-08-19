@@ -4,12 +4,17 @@
 \alias{import_rsem}
 \title{Import RSEM data using tximport}
 \usage{
-import_rsem(files, sample_names = NULL)
+import_rsem(files = ".", sample_names = NULL, txIn = FALSE, txOut = FALSE)
 }
 \arguments{
-\item{files}{A character vector of filenames to load.}
+\item{files}{A character vector of filenames to load. If not specified or if
+the input is a directory name, all appropriate files are found in the specified
+directory (or current directory).}
 
-\item{sample_names}{Optional character vector of sample names to use for files}
+\item{sample_names}{Optional character vector of sample names to use for files. If not
+specified, the sample name from the filename will be inferred.}
+
+\item{which}{Select either 'genes' or 'isoforms' for corresponding RSEM outputs}
 }
 \value{
 A list (see \code{\link[tximport:tximport]{tximport::tximport()}}) of matrices containing RSEM data.

@@ -4,12 +4,23 @@
 \alias{import_rsem_as_DESeqDataSet}
 \title{Import RSEM as SummarizedExperiment}
 \usage{
-import_rsem_as_DESeqDataSet(sample_table, formula = ~1)
+import_rsem_as_DESeqDataSet(
+  sample_table = ".",
+  txIn = FALSE,
+  txOut = FALSE,
+  formula = ~1
+)
 }
 \arguments{
-\item{sample_table}{A data.frame of annotations and filenames}
+\item{sample_table}{A data.frame of annotations and filenames. Can also be a path (default:".")
+or a vector of filenames. If a data frame, should have one column (filenames) or have the variable
+'filename' for the filenames.}
+
+\item{txIn}{logical - Transcript-level input (vs gene)}
 
 \item{formula}{A formula for DESeq (default is ~1)}
+
+\item{TxOut}{logical - Transcript-level output (vs gene)}
 }
 \value{
 A \link[SummarizedExperiment:RangedSummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} representing the RSEM
