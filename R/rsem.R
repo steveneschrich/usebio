@@ -99,7 +99,7 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 
   # We need a sample name, which can be inferred or already provided.
   if ( !utils::hasName(sample_table, "sample") )
-    sample_table$sample <- infer_rsem_samplename(filename)
+    sample_table$sample <- infer_rsem_samplename(sample_table$filename)
 
   # After all the preprocessing, we can import the results using the
   # filenames and sample names.
