@@ -13,8 +13,9 @@ import_rsem_as_DESeqDataSet(
 }
 \arguments{
 \item{sample_table}{A data.frame of annotations and filenames. Can also be a path (default:".")
-or a vector of filenames. If a data frame, should have one column (filenames) or have the variable
-'filename' for the filenames.}
+or a vector of filenames. If a data frame, should have one column (files) or have the variable
+'files' for the filenames. There can also be a \code{names} variable which will be used for
+sample names.}
 
 \item{txIn}{logical - Transcript-level input (vs gene)}
 

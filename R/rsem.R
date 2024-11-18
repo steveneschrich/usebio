@@ -63,8 +63,9 @@ import_rsem_as_ExpressionSet <- function(sample_table, formula = ~1, use_log = T
 #'
 #'  [SummarizedExperiment::SummarizedExperiment] object (Counts, Normalized Counts and TPM).
 #' @param sample_table A data.frame of annotations and filenames. Can also be a path (default:".")
-#' or a vector of filenames. If a data frame, should have one column (filenames) or have the variable
-#' 'filename' for the filenames.
+#' or a vector of filenames. If a data frame, should have one column (files) or have the variable
+#' 'files' for the filenames. There can also be a `names` variable which will be used for
+#' sample names.
 #' @param txIn logical - Transcript-level input (vs gene)
 #' @param TxOut logical - Transcript-level output (vs gene)
 #' @param formula A formula for DESeq (default is ~1)
@@ -131,7 +132,7 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 #'
 #' @description Import raw RSEM data into a list of quantifications.
 #'
-#' @details This function takes a sample table containing the `filename` field,
+#' @details This function takes a sample table containing the `files` field,
 #' and uses [tximport::tximport()] to load the files. The result is a list
 #' containing several elements: abundance, counts, length. These are matrices
 #' representing the RSEM data for a list of samples.
@@ -141,7 +142,7 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 #' @param files A character vector of filenames to load. If not specified or if
 #'  the input is a directory name, all appropriate files are found in the specified
 #'  directory (or current directory).
-#' @param sample_names Optional character vector of sample names to use for files. If not
+#' @param names Optional character vector of sample names to use for files. If not
 #'  specified, the sample name from the filename will be inferred.
 #' @param which Select either 'genes' or 'isoforms' for corresponding RSEM outputs
 #'
@@ -152,35 +153,44 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 #' \dontrun{
 #' import_rsem(c("foo.txt","bar.txt"))
 #' }
-import_rsem <- function(files = ".", sample_names = NULL, txIn = FALSE, txOut = FALSE) {
-                        #which = c("genes","isoforms")) {
+import_rsem <- function(
+    files = ".",
+    names = NULL,
+    txIn = FALSE,
+    txOut = FALSE,
+    tx2gene_gtf = NULL
+) {
 
   # Select either gene-level or isoform-level input/output
   which_input <- ifelse(txIn, "isoforms", "genes")
+
   # If files is length 1 and a directory, list the files.
   if ( length(files) == 1 && all(fs::is_dir(files) )) {
     files <- find_rsem_files(dir = files, which = which_input)
   }
   # If there were no sample names, use the basename of the given files
-  if ( is.null(sample_names) )
-    sample_names <- infer_rsem_samplename(files)
+  if ( is.null(names) )
+    names <- infer_rsem_samplename(files)
 
-  # If we are using txIn=TRUE (transcript-level) and output is gene level (txOut=FALSE),
+  # Import the data as a list
+  x <- tximport::tximport(files, type = "rem", txIn = txIn, txOut = txIn)
+  # Add sample names
+  x <- add_colnames(x, names)
+
+  # Special case: if txIn and !txOut, we are summarizing to gene level via
+  # tximport. However, this requires a mapping.
   # assemble the transcript/gene mapping by pre-loading all data to find the mappings.
   # This is super-inefficient.
   if ( txIn && !txOut ) {
-    tx2gene <- get_tx2gene_mapping(files)
-    x <- tximport::tximport(files, type="rsem", txIn =txIn, txOut = txOut, tx2gene = tx2gene)
-  } else {
-    # Import expression data (gene or isoform level)
-    x <- tximport::tximport(files, type = "rsem", txIn = txIn, txOut = txOut)
+    if ( is.null(tx2gene_gtf) )
+      tx2gene_mapping <- infer_tx2gene_mapping(files)
+    else {
+      tx2gene_mapping <- tx2gene(import_gencode_gtf(tx2gene_gtf))
+    }
+    x <- tximport::summarizeToGene(x, tx2gene = tx2gene_mapping)
+    x[["tx2gene"]] <- tx2gene_mapping
   }
 
-  # Add sample names
-  x <- add_colnames(x, sample_names)
-
-  #
-  #x <- remove_empty_rows_from_rsem(x)
   x
 }
 
@@ -273,7 +283,7 @@ infer_rsem_samplename <- function(s) {
 #' @return A data.frame consisting of two columns `files` and `names`.
 #' @export
 #'
-build_rsem_sample_table <- function(dir, which = c("isoforms","genes")) {
+build_rsem_sample_table <- function(dir, which = c("genes","isoforms")) {
   which <- match.arg(which)
 
   tibble::tibble(
@@ -300,7 +310,18 @@ add_colnames <- function(x, colnames) {
   })
 }
 
-get_tx2gene_mapping <- function(files = ".") {
+#' Infer tx2gene mapping for RSEM
+#'
+#' A simple approach of reading the tx2gene mapping directly from the
+#' first RSEM input file provided. Not a great strategy but sometimes
+#' this is all that is available.
+#'
+#' @param files A list of RSEM transcript-level files
+#'
+#' @return A tx2gene mapping (two column data frame, first is tx, second is gene).
+#' @export
+#'
+infer_tx2gene_mapping <- function(files = ".") {
   if ( length(files) == 1 && all(fs::is_dir(files))) {
     files <- find_rsem_files(files, which = "isoforms")
   }
@@ -308,7 +329,7 @@ get_tx2gene_mapping <- function(files = ".") {
   # For all input files, read in the first two columns (transcript_id and gene_id).
   # The goal is to create a tx2gene data frame suitable for tximport. This is
   # just a unique data frame.
-  purrr::map(files, \(f) {
+  purrr::map(files[1], \(f) {
     readr::read_tsv(file = f, col_select=c("transcript_id","gene_id"), col_types="cc")
   }) |>
     purrr::list_rbind() |>

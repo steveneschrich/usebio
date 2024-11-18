@@ -5,17 +5,17 @@
 \title{Import a gencode gtf}
 \usage{
 import_gencode_gtf(
-  version = "v32",
   url = NULL,
+  version = "v32",
   species = c("human"),
   gencode_base_url = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
 )
 }
 \arguments{
-\item{version}{A version number (assuming human)}
-
 \item{url}{A URL to use for direct file access. Note all other parameters
 are ignored if this is set.}
+
+\item{version}{A version number (assuming human)}
 
 \item{species}{The species (currently human) to import}
 

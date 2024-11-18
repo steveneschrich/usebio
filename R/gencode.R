@@ -15,12 +15,12 @@ NULL
 #' @param species The species (currently human) to import
 #' @param gencode_base_url The base URL of the genocode download (EBI)
 #'
-#' @return A GRanges object representing the genocode gtf (see [rtracklayer::import()]).
+#' @return A GRanges object representing the genocode gtf (see [rtracklayer::import.gff()]).
 #' @export
 #'
 import_gencode_gtf <- function(
-    version = "v32",
     url = NULL,
+    version = "v32",
     species = c("human"),
     gencode_base_url = "ftp://ftp.ebi.ac.uk/pub/databases/gencode"
 ) {

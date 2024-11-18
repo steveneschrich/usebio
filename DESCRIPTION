@@ -14,14 +14,19 @@ Imports:
     affyutils,
     AnnotationDbi,
     Biobase,
+    BiocFileCache,
+    cli,
     DESeq2,
     devtools,
     dplyr,
+    fs,
     magrittr,
     org.Hs.eg.db,
     purrr,
+    rappdirs,
     readr,
     rlang,
+    rtracklayer,
     S4Vectors,
     stringr,
     SummarizedExperiment,
@@ -30,4 +35,5 @@ Imports:
 Suggests:
  estimate
 Remotes:
-  steveneschrich/affyutils
+  steveneschrich/affyutils,
+  bioc::BiocFileCache
