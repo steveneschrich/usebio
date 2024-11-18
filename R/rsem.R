@@ -1,4 +1,11 @@
 
+# Some notes:
+# ideally:
+# import_rsem(sample_table, formula, output_type=c("gene","tx2gene","tx"), formula=~1, gene_model = "")
+#
+# read files in
+
+
 #' Import RSEM as ExpressionSet
 #'
 #'  [Biobase::ExpressionSet] object (Counts, Normalized Counts and TPM).
@@ -253,6 +260,27 @@ infer_rsem_samplename <- function(s) {
     stringr::str_remove("\\.(genes|isoforms)\\.results$")
 }
 
+#' Generate a RSEM-based sample table based on a directory
+#'
+#' This function infers a set of samples that have RSEM output based on
+#' a target directory (`dir`) and a RSEM type (`genes` or `isoforms`). The
+#' sample name is then inferred from these files, resulting in a data frame
+#' with `files` and `names` columns.
+#'
+#' @param dir The directory to look in for RSEM files.
+#' @param which What RSEM output type (genes, isoforms) to identify
+#'
+#' @return A data.frame consisting of two columns `files` and `names`.
+#' @export
+#'
+build_rsem_sample_table <- function(dir, which = c("isoforms","genes")) {
+  which <- match.arg(which)
+
+  tibble::tibble(
+    files = find_rsem_files(dir, which = which),
+    names = infer_rsem_samplename(files)
+  )
+}
 
 #' Add column names to matrices in the list x
 #'
