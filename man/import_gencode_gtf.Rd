@@ -22,7 +22,7 @@ are ignored if this is set.}
 \item{gencode_base_url}{The base URL of the genocode download (EBI)}
 }
 \value{
-A GRanges object representing the genocode gtf (see \code{\link[rtracklayer:import]{rtracklayer::import()}}).
+A GRanges object representing the genocode gtf (see \code{\link[rtracklayer:GFFFile-class]{rtracklayer::import.gff()}}).
 }
 \description{
 Import a gencode gtf

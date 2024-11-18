@@ -127,6 +127,27 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 }
 
 
+#' Import RSEM data using a sample table
+#'
+#' Import data from files using a sample table (with files and optionally names),
+#' either at the transcript or gene level.
+#'
+#' @param sample_table
+#' @param which
+#' @param tx2gene
+#'
+#' @return
+#' @export
+#'
+import_rsem <- function(sample_table, which=c("tx2gene","gene","tx"), tx2gene = NULL) {
+  import_rsem_files(
+    files = sample_table[["files"]],
+    names = sample_table[["names"]],
+    txIn = which %in% c("tx2gene","tx"),
+    txOut = which %in% c("tx"),
+    tx2gene_gtf = tx2gene
+  )
+}
 
 #' Import RSEM data using tximport
 #'
@@ -146,14 +167,17 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 #'  specified, the sample name from the filename will be inferred.
 #' @param which Select either 'genes' or 'isoforms' for corresponding RSEM outputs
 #'
-#' @return A list (see [tximport::tximport()]) of matrices containing RSEM data.
+#' @return A list (see [tximport::tximport()]) of matrices containing RSEM data. Note
+#' that the tx2gene option may be used, in which case a `tx2gene` data frame may
+#' be included in the return result.
 #' @export
+#'
 #'
 #' @examples
 #' \dontrun{
 #' import_rsem(c("foo.txt","bar.txt"))
 #' }
-import_rsem <- function(
+import_rsem_files <- function(
     files = ".",
     names = NULL,
     txIn = FALSE,
@@ -173,7 +197,7 @@ import_rsem <- function(
     names <- infer_rsem_samplename(files)
 
   # Import the data as a list
-  x <- tximport::tximport(files, type = "rem", txIn = txIn, txOut = txIn)
+  x <- tximport::tximport(files, type = "rsem", txIn = txIn, txOut = txIn)
   # Add sample names
   x <- add_colnames(x, names)
 
