@@ -46,28 +46,109 @@ as_tibble.DFrame <- function(x) {
 }
 
 
+#' Extract column metadata as a tibble
+#'
+#' @description Extract the column metadata from an object and return
+#' the result as a tibble.
+#'
+#' @param x The object to extract column metadata from
+#'
+#' @return A tibble containing column metadata from `x`.
+#' @export
+#' @docType methods
+#' @rdname col_data-methods
+#'
 setGeneric("col_data", function(x) standardGeneric("col_data"))
+
+#' Set column metadata as a tibble
+#'
+#' @description Some objects support column-oriented metadata. This function
+#' will store this metadata with the object.
+#'
+#' @param x The tibble of metadata to store.
+#'
+#' @return The object with column metadata included.
+#' @export
+#' @docType methods
+#' @rdname col_data-set
 setGeneric("col_data<-", function(x, value) standardGeneric("col_data<-"))
+
+#' @rdname col_data-methods
+#' @aliases col_data,SummarizedExperiment,ANY-method
 setMethod("col_data", "SummarizedExperiment",  function(x) {
   as_tibble(SummarizedExperiment::colData(x))
 })
+
+#' @rdname col_data-set
+#' @aliases `col_data<-`,SummarizedExperiment,ANY-method
 setMethod("col_data<-", "SummarizedExperiment", function(x, value) {
   SummarizedExperiment::colData(x) <- as_DFrame.tibble(value)
   x
 })
 
+#' Convert input to S4Vectors DataFrame
+#'
+#' @description Convert the input to a S4Vectors DataFrame object.
+#' @param x The input to convert to DFrame
+#' @return A [S4Vectors::DataFrame()] object.
+#' @export
+#' @docType methods
+#' @rdname as_DFrame
 setGeneric("as_DFrame", function(x) standardGeneric("as_DFrame"))
+
+#' @rdname as_DFrame
+#' @aliases as_DFrame,tbl_df,ANY-method
 setMethod("as_DFrame", "tbl_df", as_DFrame.tibble)
+
+#' Extract row data from an object
+#'
+#' @param x An object to extract row data from
+#' @return A tibble of row data
+#' @docType methods
+#' @rdname row_data
+#' @export
 setGeneric("row_data", function(x) standardGeneric("row_data"))
+
+#' Set row data on an object
+#'
+#' @description Some objects support row-oriented metadata. This function
+#' will store this metadata with the object.
+#'
+#' @param x The object to set row data on
+#' @param value The row data
+#' @return The object with row data set
+#' @export
+#' @docType methods
+#' @rdname row_data-set
 setGeneric("row_data<-", function(x, value) standardGeneric("row_data<-"))
+
+#' @rdname row_data
+#' @aliases row_data,SummarizedExperiment,ANY-method
 setMethod("row_data", "SummarizedExperiment", function(x) {
   as_tibble(SummarizedExperiment::rowData(x))
 })
+
+#' @rdname row_data-set
+#' @aliases `row_data<-`,SummarizedExperiment,ANY-method
 setMethod("row_data<-", "SummarizedExperiment", function(x, value) {
   SummarizedExperiment::rowData(x) <- as_DFrame.tibble(value)
   x
 })
+
+#' Convert object to tibble
+#' @description Although the tibble class uses S3 for converting objects
+#' to tibbles, the Bioconductor objects are S4. This converts tibbles that
+#' are S4-oriented.
+#'
+#' @export
+#' @docType methods
+#' @rdname as_tibble
 setGeneric("as_tibble", function(x) standardGeneric("as_tibble"))
+
+#' @rdname as_tibble
+#' @aliases as_tibble,DFrame,ANY-method
 setMethod("as_tibble","DFrame", as_tibble.DFrame)
+#' @rdname as_tibble
+#' @aliases as_tibble,GRanges,ANY-method
 setMethod("as_tibble", "GRanges", as_tibble.DFrame)
 
