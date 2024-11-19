@@ -2,9 +2,12 @@
 % Please edit documentation in R/tibble.R
 \name{as_DFrame.tibble}
 \alias{as_DFrame.tibble}
+\alias{as_DFrame.data.frame}
 \title{Convert a tibble to a DFrame}
 \usage{
-as_DFrame.tibble(x)
+\method{as_DFrame}{tibble}(x)
+
+\method{as_DFrame}{data.frame}(x)
 }
 \arguments{
 \item{x}{A tibble (or data.frame)}
@@ -24,3 +27,8 @@ is assumed (if using \code{\link[=as_tibble.DFrame]{as_tibble.DFrame()}}) that t
 in the data frame calumn \code{.rownames}. If it is not present, rownames are
 not set. If non-unique, DFrame can handle this case by default.
 }
+\section{Functions}{
+\itemize{
+\item \code{as_DFrame(data.frame)}: Use a data frame
+
+}}

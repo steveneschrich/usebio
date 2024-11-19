@@ -21,6 +21,22 @@ as_DFrame.tibble <- function(x) {
   x[[".rownames"]]<-NULL
   S4Vectors::DataFrame(x, row.names=rn, check.names=FALSE)
 }
+#' @describeIn as_DFrame.tibble Use a data frame
+#' @export
+as_DFrame.data.frame <- function(x) {
+  as_DFrame.tibble(x)
+}
+
+#' @export
+as_DFrame <- function(x) {
+  UseMethod("as_DFrame")
+}
+
+
+#' @importFrom tibble as_tibble
+#' @export
+tibble::as_tibble
+
 
 #' Convert a DFrame to tibble
 #'
@@ -36,15 +52,25 @@ as_DFrame.tibble <- function(x) {
 #'
 #' @return A tibble representing `x`
 #' @export
-#'
 as_tibble.DFrame <- function(x) {
   # Strip out rownames before conversion
   rn <- rownames(x)
   if ( is.null(rn) ) rn <- ""
   rownames(x) <- NULL
-  cbind(.rownames = rn, as.data.frame(x))
+  x <- cbind(.rownames = rn, as.data.frame(x))
+  tibble::as_tibble(x)
 }
 
+#' Convert GRanges object to tibble
+#'
+#' @param x A [GenomicRanges::GRanges()] object
+#'
+#' @return A tibble representing `x`
+#' @export
+#'
+as_tibble.GRanges <- function(x) {
+  tibble::as_tibble(as.data.frame(x))
+}
 
 #' Extract column metadata as a tibble
 #'
@@ -86,19 +112,6 @@ setMethod("col_data<-", "SummarizedExperiment", function(x, value) {
   x
 })
 
-#' Convert input to S4Vectors DataFrame
-#'
-#' @description Convert the input to a S4Vectors DataFrame object.
-#' @param x The input to convert to DFrame
-#' @return A [S4Vectors::DataFrame()] object.
-#' @export
-#' @docType methods
-#' @rdname as_DFrame
-setGeneric("as_DFrame", function(x) standardGeneric("as_DFrame"))
-
-#' @rdname as_DFrame
-#' @aliases as_DFrame,tbl_df,ANY-method
-setMethod("as_DFrame", "tbl_df", as_DFrame.tibble)
 
 #' Extract row data from an object
 #'
@@ -135,20 +148,4 @@ setMethod("row_data<-", "SummarizedExperiment", function(x, value) {
   x
 })
 
-#' Convert object to tibble
-#' @description Although the tibble class uses S3 for converting objects
-#' to tibbles, the Bioconductor objects are S4. This converts tibbles that
-#' are S4-oriented.
-#'
-#' @export
-#' @docType methods
-#' @rdname as_tibble
-setGeneric("as_tibble", function(x) standardGeneric("as_tibble"))
-
-#' @rdname as_tibble
-#' @aliases as_tibble,DFrame,ANY-method
-setMethod("as_tibble","DFrame", as_tibble.DFrame)
-#' @rdname as_tibble
-#' @aliases as_tibble,GRanges,ANY-method
-setMethod("as_tibble", "GRanges", as_tibble.DFrame)
 

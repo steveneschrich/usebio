@@ -4,7 +4,7 @@
 \alias{as_tibble.DFrame}
 \title{Convert a DFrame to tibble}
 \usage{
-as_tibble.DFrame(x)
+\method{as_tibble}{DFrame}(x)
 }
 \arguments{
 \item{x}{A \code{\link[S4Vectors:DataFrame-class]{S4Vectors::DFrame()}} object}

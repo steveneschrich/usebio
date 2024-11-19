@@ -71,7 +71,11 @@ import_gencode_gtf <- function(
 #' @export
 #'
 tx2gene <- function(gtf) {
-  x <- as_tibble(gtf)
+
+  if ( methods::is(gtf, "GRanges") || methods::is(gtf, "DFrame"))
+    x <- as_tibble.DFrame(gtf)
+  else
+    x <- as.data.frame(gtf)
 
   dplyr::distinct(
     gtf_tx_annotation(x),
