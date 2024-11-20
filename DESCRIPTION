@@ -33,7 +33,8 @@ Imports:
     tibble,
     tximport
 Suggests:
- estimate
+    arrow,
+    estimate
 Remotes:
   steveneschrich/affyutils,
   bioc::BiocFileCache

@@ -123,10 +123,104 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
   # And we want to add the TPM values as an extra assay to the object.
   SummarizedExperiment::assays(dds)$TPM <- txi.rsem$abundance
 
+  # Add row and col data.
+
   dds
 }
 
 
+verify_tximport <- function(x) {
+  # Make sure x is a tximport list.
+  stopifnot(utils::hasName(x, "abundance"), utils::hasName(x, "counts"), utils::hasName(x,"length"))
+  # Make sure dimension names are consistent across list elements
+  stopifnot(all(colnames(x[["abundance"]])==colnames(x[["counts"]])))
+  stopifnot(all(colnames(x[["abundance"]])==colnames(x[["length"]])))
+  stopifnot(all(rownames(x[["abundance"]])==rownames(x[["counts"]])))
+  stopifnot(all(rownames(x[["abundance"]])==rownames(x[["length"]])))
+
+}
+tximport_to_DESeq2 <- function(x) {
+
+}
+#' Title
+#'
+#' @param x
+#' @param phenoData
+#' @param featureData
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tximport_to_ExpressionSet <- function(x, phenoData = NULL, featureData = NULL) {
+
+  verify_tximport(x)
+  # Make sure phenoData (if provided) matches the colnames
+  stopifnot((!is.null(phenoData) && all(colnames(x[["abundance"]]) %in% rownames(phenoData))))
+  # Make sure the featureData (if provided) matches
+  stopifnot((!is.null(featureData) && all(rownames(x[["abundance"]]) %in% rownames(featureData))))
+
+  # There is an environment of assayData to store measurements
+  ad <- new.env()
+  ad$TPM <- x[["abundance"]]
+  ad$counts <- x[["counts"]]
+  ad$length <- x[["length"]]
+
+  if ( !is.null(phenoData)) {
+    phenoData <- Biobase::AnnotatedDataFrame(
+      phenoData[colnames(x[["abundance"]]),]
+    )
+  }
+  if ( !is.null(featureData)) {
+    featureData <- Biobase::AnnotatedDataFrame(
+      featureData[rownames(x[["abundance"]]),]
+    )
+  }
+  es <- Biobase::ExpressionSet(
+    assayData = ad,
+    phenoData = phenoData,
+    featureData = featureData,
+    annotation = "tximport"
+  )
+  es
+}
+
+
+#' Title
+#'
+#' @param x
+#' @param col_data
+#' @param row_data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL) {
+  verify_tximport(x)
+
+  stopifnot(
+    all(!is.null(col_data) && colnames(x[["abundance"]] %in% rownames(col_data))),
+    all(!is.null(row_data) && rownames(x[["abundance"]] %in% rownames(row_data)))
+  )
+
+  if ( !is.null(col_data)) {
+    col_data <- Biobase::AnnotatedDataFrame(
+      col_data[colnames(x[["abundance"]]),]
+    )
+  }
+  if ( !is.null(row_data)) {
+    row_data <- Biobase::AnnotatedDataFrame(
+      row_data[rownames(x[["abundance"]]),]
+    )
+  }
+  SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = x[["counts"]], abundance = x[["abundance"]], length = x[["length"]]),
+    rowData = row_data,
+    colData = col_data
+
+  )
+}
 #' Import RSEM data using a sample table
 #'
 #' Import data from files using a sample table (with files and optionally names),
@@ -182,7 +276,8 @@ import_rsem_files <- function(
     names = NULL,
     txIn = FALSE,
     txOut = FALSE,
-    tx2gene_gtf = NULL
+    tx2gene_gtf = NULL,
+    importer = NULL
 ) {
 
   # Select either gene-level or isoform-level input/output
@@ -196,8 +291,13 @@ import_rsem_files <- function(
   if ( is.null(names) )
     names <- infer_rsem_samplename(files)
 
+  # Importer: If arrow is installed use this
+  if ( is.null(importer) && rlang::is_installed("arrow"))
+    importer <- arrow::read_tsv_arrow
+
   # Import the data as a list
-  x <- tximport::tximport(files, type = "rsem", txIn = txIn, txOut = txIn)
+  x <- tximport::tximport(files, type = "rsem", txIn = txIn, txOut = txIn,
+                          importer = importer)
   # Add sample names
   x <- add_colnames(x, names)
 
