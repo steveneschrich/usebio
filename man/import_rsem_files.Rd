@@ -9,7 +9,8 @@ import_rsem_files(
   names = NULL,
   txIn = FALSE,
   txOut = FALSE,
-  tx2gene_gtf = NULL
+  tx2gene_gtf = NULL,
+  importer = NULL
 )
 }
 \arguments{
@@ -38,9 +39,4 @@ representing the RSEM data for a list of samples.
 }
 \note{
 This function is focused on gene-level RSEM data, not transcript-level.
-}
-\examples{
-\dontrun{
-import_rsem(c("foo.txt","bar.txt"))
-}
 }

@@ -129,18 +129,53 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 }
 
 
-verify_tximport <- function(x) {
+#' Verify that tximport list is valid
+#'
+#' @param x A list from the [tximport::tximport()] function
+#'
+#' @return A logical indicating of the tximport is valid.
+#' @export
+#'
+valid_tximport <- function(x) {
   # Make sure x is a tximport list.
-  stopifnot(utils::hasName(x, "abundance"), utils::hasName(x, "counts"), utils::hasName(x,"length"))
+  res <- utils::hasName(x, "abundance") &&
+    utils::hasName(x, "counts") && utils::hasName(x,"length")
+
   # Make sure dimension names are consistent across list elements
-  stopifnot(all(colnames(x[["abundance"]])==colnames(x[["counts"]])))
-  stopifnot(all(colnames(x[["abundance"]])==colnames(x[["length"]])))
-  stopifnot(all(rownames(x[["abundance"]])==rownames(x[["counts"]])))
-  stopifnot(all(rownames(x[["abundance"]])==rownames(x[["length"]])))
+  res <- res &&
+    all(colnames(x[["abundance"]])==colnames(x[["counts"]])) &&
+    all(colnames(x[["abundance"]])==colnames(x[["length"]])) &&
+    all(rownames(x[["abundance"]])==rownames(x[["counts"]])) &&
+    all(rownames(x[["abundance"]])==rownames(x[["length"]]))
 
+  res
 }
-tximport_to_DESeq2 <- function(x) {
 
+
+#' Import tximport list to DESeq2 object
+#'
+#' Convert a tximport list of elements from [tximport::tximport()] into a
+#' DESeq2 object [DESeq2::DESeqDataSet()] for downstream processing.
+#'
+#' @param x The tximport list from [tximport::tximport()]
+#'
+#' @return
+#' @export
+#'
+tximport_to_DESeq2 <- function(x) {
+  stopifnot(valid_tximport(x))
+
+  # There are DESeq2-specific things to do (convert to DESeq2 object and normalize)
+  xdeseq <- DESeq2::DESeqDataSetFromTximport(x, colData = x[["sample_table"]], ~1)
+  #xdeseq <- DESeq2::estimateSizeFactors(xdeseq)
+
+  # And we want to add the TPM values as an extra assay to the object.
+  SummarizedExperiment::assays(xdeseq)$TPM <- x[["abundance"]]
+
+  # Add row and col data.
+  #if ( !is.null(gtf) )
+
+  xdeseq
 }
 #' Title
 #'
@@ -154,7 +189,8 @@ tximport_to_DESeq2 <- function(x) {
 #' @examples
 tximport_to_ExpressionSet <- function(x, phenoData = NULL, featureData = NULL) {
 
-  verify_tximport(x)
+  stopifnot(valid_tximport(x))
+
   # Make sure phenoData (if provided) matches the colnames
   stopifnot((!is.null(phenoData) && all(colnames(x[["abundance"]]) %in% rownames(phenoData))))
   # Make sure the featureData (if provided) matches
@@ -197,7 +233,7 @@ tximport_to_ExpressionSet <- function(x, phenoData = NULL, featureData = NULL) {
 #'
 #' @examples
 tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL) {
-  verify_tximport(x)
+  stopifnot(valid_tximport(x))
 
   stopifnot(
     all(!is.null(col_data) && colnames(x[["abundance"]] %in% rownames(col_data))),
@@ -233,12 +269,12 @@ tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL)
 #' @return
 #' @export
 #'
-import_rsem <- function(sample_table, which=c("tx2gene","gene","tx"), tx2gene = NULL) {
+import_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL) {
   import_rsem_files(
     files = sample_table[["files"]],
     names = sample_table[["names"]],
-    txIn = which %in% c("tx2gene","tx"),
-    txOut = which %in% c("tx"),
+    txIn = which %in% c("transcript","tx2gene"),
+    txOut = which %in% c("transcript"),
     tx2gene_gtf = tx2gene
   )
 }
@@ -267,10 +303,6 @@ import_rsem <- function(sample_table, which=c("tx2gene","gene","tx"), tx2gene = 
 #' @export
 #'
 #'
-#' @examples
-#' \dontrun{
-#' import_rsem(c("foo.txt","bar.txt"))
-#' }
 import_rsem_files <- function(
     files = ".",
     names = NULL,
@@ -292,8 +324,12 @@ import_rsem_files <- function(
     names <- infer_rsem_samplename(files)
 
   # Importer: If arrow is installed use this
-  if ( is.null(importer) && rlang::is_installed("arrow"))
-    importer <- arrow::read_tsv_arrow
+  if ( is.null(importer) ) {
+    if ( rlang::is_installed("arrow") )
+      importer <- arrow::read_tsv_arrow
+    else
+      cli::cli_alert_info("Package arrow not installed, consider using it for efficiency.")
+  }
 
   # Import the data as a list
   x <- tximport::tximport(files, type = "rsem", txIn = txIn, txOut = txIn,
@@ -306,17 +342,21 @@ import_rsem_files <- function(
   # assemble the transcript/gene mapping by pre-loading all data to find the mappings.
   # This is super-inefficient.
   if ( txIn && !txOut ) {
-    if ( is.null(tx2gene_gtf) )
+    if ( is.null(gtf_url) )
       tx2gene_mapping <- infer_tx2gene_mapping(files)
     else {
-      tx2gene_mapping <- tx2gene(import_gencode_gtf(tx2gene_gtf))
+      tx2gene_mapping <- tx2gene(tx2gene_gtf)
     }
     x <- tximport::summarizeToGene(x, tx2gene = tx2gene_mapping)
     x[["tx2gene"]] <- tx2gene_mapping
   }
 
+  # Include the sample table in the list.
+  x[["sample_table"]] <- tibble::tibble(files = files, names = names)
+
   x
 }
+
 
 #' Title
 #'

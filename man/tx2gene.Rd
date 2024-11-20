@@ -4,7 +4,7 @@
 \alias{tx2gene}
 \title{Create tx2gene mapping from gtf}
 \usage{
-tx2gene(gtf)
+tx2gene(url, ...)
 }
 \arguments{
 \item{gtf}{A gtf object to extract mapping}

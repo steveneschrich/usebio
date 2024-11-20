@@ -4,7 +4,7 @@
 \alias{gtf_gene_annotation}
 \title{Extract gene-level annotation from gtf}
 \usage{
-gtf_gene_annotation(gtf)
+gtf_gene_annotation(url, ...)
 }
 \arguments{
 \item{gtf}{}

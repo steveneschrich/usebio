@@ -2,9 +2,27 @@
 #'
 #' @description Routines for interacting with gtf gene annotation files
 #'
-#' @details GTF is a gene annotation format accessible from EBI/Ensembl
+#' @details GTF is a gene annotation format accessible from EBI/Ensembl. These
+#' routines are wrappers around the excellent [rtracklayer] package. The goal
+#' is merely to make working with these files a bit easier, in the mode of
+#' the [usethis] package.
 #'
-#' @name gtf
+#' The GTF files (for gencode) have information at the gene, transcript and
+#' exon levels. It is possible to get an object with all of these, or with
+#' only data at one of these levels. These functions make the process slightly
+#' easier.
+#'
+#' *Caching*: Since the files in question are large, one of the things that
+#' this package does is provide caching (via BiocFileCache) of the files for
+#' subsequent loads. Hopefully, it is often the case that the same file would
+#' be needed multiple times.
+#'
+#' Finally, although not very well thought out, there is a function (import_gencode_gtf)
+#' which attempts to impose some logic on the process of inferring the right gencode
+#' file. It is very much a work in progress.
+#'
+#'
+#' @name gtf_gencode
 NULL
 
 #' Import a gencode gtf
@@ -46,19 +64,10 @@ import_gencode_gtf <- function(
     url <- sprintf("%s/gencode.v%d.annotation.gtf.gz",gencode_dir, numeric_version)
   }
 
-  # We utilize Bioconductor caching for the gtf
-  bfc <- BiocFileCache::BiocFileCache(
-    cache = rappdirs::user_cache_dir(appname="org.R-project.R/R/usebio"),
-    ask = FALSE
-  )
 
-  cli::cli_progress_step("Retrieving gtf from {url}")
-  gtf_cache <- BiocFileCache::bfcrpath(bfc, url)
   cli::cli_progress_step("Importing gtf to GRanges format")
-  gtf_result <- rtracklayer::import(gtf_cache, format="gtf")
+  gtf_annotation(url)
 
-
-  gtf_result
 }
 
 
@@ -70,18 +79,11 @@ import_gencode_gtf <- function(
 #'  for use in [tximport::tximport()].
 #' @export
 #'
-tx2gene <- function(gtf) {
+tx2gene <- function(url, ...) {
 
-  if ( methods::is(gtf, "GRanges") || methods::is(gtf, "DFrame"))
-    x <- as_tibble.DFrame(gtf)
-  else
-    x <- as.data.frame(gtf)
+  t2g <- gtf_transcript_annotation(url, ...)
 
-  dplyr::distinct(
-    gtf_tx_annotation(x),
-    transcript_id,
-    gene_id
-  )
+  dplyr::distinct(as_tibble.DFrame(t2g), transcript_id, gene_id)
 }
 
 #' Extract gene-level annotation from gtf
@@ -92,10 +94,8 @@ tx2gene <- function(gtf) {
 #' @export
 #'
 #' @examples
-gtf_gene_annotation <- function(gtf) {
-  x <- as_tibble(grf)
-
- dplyr::filter(x, type == "gene")
+gtf_gene_annotation <- function(url, ...) {
+  gtf_annotation(url, feature.type="gene")
 }
 
 #' Extract transcript-level annotation from gtf
@@ -106,11 +106,57 @@ gtf_gene_annotation <- function(gtf) {
 #' @export
 #'
 #' @examples
-gtf_tx_annotation <- function(gtf) {
-  x <- as_tibble(gtf)
-
-  dplyr::filter(x, type == "transcript")
+gtf_transcript_annotation <- function(url, ...) {
+  gtf_annotation(url, feature.type="transcript")
 }
+
+#' Title
+#'
+#' @param url
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+gtf_exon_annotation <- function(url, ...) {
+  gtf_annotation(url, feature.type="exon")
+}
+
+#' Title
+#'
+#' @param url
+#' @param feature.type
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+gtf_annotation <- function(url, feature.type = NULL, ...) {
+  g <- get_gtf(url)
+  rtracklayer::import(g, format="gtf", feature.type = feature.type, ...)
+}
+#' Title
+#'
+#' @param url
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_gtf <- function(url) {
+  # We utilize Bioconductor caching for the gtf
+  bfc <- BiocFileCache::BiocFileCache(
+    cache = rappdirs::user_cache_dir(appname="org.R-project.R/R/usebio"),
+    ask = FALSE
+  )
+
+  cli::cli_progress_step("Retrieving gtf from {url}")
+  BiocFileCache::bfcrpath(bfc, url)
+
+}
+
 
 # Some notes
 #AnnotationHub::query(ah, c("TxDb","Gencode","v32", "hg38","gtf"))
