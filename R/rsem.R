@@ -342,13 +342,12 @@ import_rsem_files <- function(
   # assemble the transcript/gene mapping by pre-loading all data to find the mappings.
   # This is super-inefficient.
   if ( txIn && !txOut ) {
-    if ( is.null(gtf_url) )
+    if ( is.null(tx2gene_gtf) )
       tx2gene_mapping <- infer_tx2gene_mapping(files)
     else {
       tx2gene_mapping <- tx2gene(tx2gene_gtf)
     }
     x <- tximport::summarizeToGene(x, tx2gene = tx2gene_mapping)
-    x[["tx2gene"]] <- tx2gene_mapping
   }
 
   # Include the sample table in the list.
