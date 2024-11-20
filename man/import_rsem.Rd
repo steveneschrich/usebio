@@ -2,14 +2,18 @@
 % Please edit documentation in R/rsem.R
 \name{import_rsem}
 \alias{import_rsem}
-\title{Import RSEM data using a sample table}
+\title{Title}
 \usage{
-import_rsem(sample_table, which = c("tx2gene", "gene", "tx"), tx2gene = NULL)
+import_rsem(
+  sample_table,
+  which = c("gene", "transcript", "tx2gene"),
+  tx2gene = NULL,
+  gene_annotation
+)
 }
 \arguments{
-\item{tx2gene}{}
+\item{gene_annotation}{}
 }
 \description{
-Import data from files using a sample table (with files and optionally names),
-either at the transcript or gene level.
+Title
 }

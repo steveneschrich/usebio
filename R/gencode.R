@@ -79,7 +79,7 @@ import_gencode_gtf <- function(
 #'  for use in [tximport::tximport()].
 #' @export
 #'
-tx2gene <- function(url, ...) {
+gtf_tx2gene <- function(url, ...) {
 
   t2g <- gtf_transcript_annotation(url, ...)
 

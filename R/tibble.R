@@ -148,4 +148,44 @@ setMethod("row_data<-", "SummarizedExperiment", function(x, value) {
   x
 })
 
+#' Title
+#'
+#' @param x
+#' @param coldata
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_col_data <- function(x, coldata) {
+  tdf <- usebio::col_data(x)
+  if ( !utils::hasName(coldata, ".rownames") ) {
+    stopifnot(!is.null(rownames(coldata)))
+    coldata <- tibble::rownames_to_column(coldata, ".rownames")
+  }
+  tdf <- dplyr::left_join(tdf, coldata, by=".rownames",relationship="one-to-one")
+
+  SummarizedExperiment::col_data(x) <- tdf
+  x
+}
+#' Title
+#'
+#' @param x
+#' @param rowdata
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_row_data <- function(x, rowdata) {
+  tdf <- usebio::row_data(x)
+  if ( !utils::hasName(rowdata, ".rownames") ) {
+    stopifnot(!is.null(rownames(rowdata)))
+    rowdata <- tibble::rownames_to_column(rowdata, ".rownames")
+  }
+  tdf <- dplyr::left_join(tdf, rowdata, by=".rownames",relationship="one-to-one")
+
+  SummarizedExperiment::row_data(x) <- tdf
+  x
+}
 

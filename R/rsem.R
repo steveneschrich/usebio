@@ -167,16 +167,46 @@ tximport_to_DESeq2 <- function(x) {
 
   # There are DESeq2-specific things to do (convert to DESeq2 object and normalize)
   xdeseq <- DESeq2::DESeqDataSetFromTximport(x, colData = x[["sample_table"]], ~1)
-  #xdeseq <- DESeq2::estimateSizeFactors(xdeseq)
+  xdeseq <- DESeq2::estimateSizeFactors(xdeseq)
 
   # And we want to add the TPM values as an extra assay to the object.
   SummarizedExperiment::assays(xdeseq)$TPM <- x[["abundance"]]
 
-  # Add row and col data.
-  #if ( !is.null(gtf) )
 
   xdeseq
 }
+
+#' Title
+#'
+#' @param x
+#' @param gtf_url
+#' @param which
+#'
+#' @return
+#' @export
+#'
+#' @examples
+annotate_rsem_rows <- function(x, gtf_url, which = c("gene","transcript")) {
+  which <- match.args(which)
+
+  # Retrieve gene/transcript-level annotation from the gtf
+  g <- as.data.frame(gtf_annotation(gtf_url, feature.type = which))
+
+  # Set annotation rownames to identifier (gene or transcript)
+  rownames(g) <- g[[ifelse(which=="gene","gene_id","transcript_id")]]
+  stopifnot(
+    all(rownames(g) %in% rownames(x)),
+    all(rownames(x) %in% rownames(g))
+  )
+  # Rearrange gene annotation relative to the experimental object
+  g <- g[rownames(x),]
+
+  # Then add the annotation as row annotation
+  SummarizedExperiment::rowData(x) <- g
+
+  x
+}
+
 #' Title
 #'
 #' @param x
@@ -257,6 +287,34 @@ tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL)
 
   )
 }
+
+#' Title
+#'
+#' @param sample_table
+#' @param which
+#' @param tx2gene
+#' @param gene_annotation
+#'
+#' @return
+#' @export
+#'
+#' @examples
+import_rsem <- function(
+    sample_table,
+    which = c("gene","transcript","tx2gene"),
+    tx2gene = NULL,
+    gene_annotation
+) {
+
+  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = gene_annotation)
+  x <- usebio::tximport_to_DESeq2(x)
+  x <- usebio::annotate_rsem_rows(
+    x, gtf_url = gene_annotation,
+    which = ifelse(which=="transcript","transcript","gene")
+  )
+
+  x
+}
 #' Import RSEM data using a sample table
 #'
 #' Import data from files using a sample table (with files and optionally names),
@@ -269,8 +327,8 @@ tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL)
 #' @return
 #' @export
 #'
-import_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL) {
-  import_rsem_files(
+tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL) {
+  tximport_rsem_files(
     files = sample_table[["files"]],
     names = sample_table[["names"]],
     txIn = which %in% c("transcript","tx2gene"),
@@ -295,15 +353,23 @@ import_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2
 #'  directory (or current directory).
 #' @param names Optional character vector of sample names to use for files. If not
 #'  specified, the sample name from the filename will be inferred.
-#' @param which Select either 'genes' or 'isoforms' for corresponding RSEM outputs
+#' @param txIn (logical) See [tximport::tximport()], is transcript-level input expected.
+#' @param txOut (logical) See [tximport::tximport()], is transcript-level output required.
+#' @param tx2gene_gtf (string) If txOut is FALSE and txIn is TRUE, then the data must be
+#'  summarized from transcript-level to gene level. The tx2gene mapping can be inferred
+#'  from the input file(s), or if a gtf annotation file is available, use this. This
+#'  parameter is for a URL/file associated with a gtf for this conversion.
+#' @param importer A function (see [tximport::tximport()]) for reading in the rsem output
+#'  files. Note that if NULL, options include using [arrow::read_tsv_arrow()], [readr::read_tsv()].
 #'
-#' @return A list (see [tximport::tximport()]) of matrices containing RSEM data. Note
-#' that the tx2gene option may be used, in which case a `tx2gene` data frame may
-#' be included in the return result.
+#' @return A list (see [tximport::tximport()]) of matrices containing RSEM data. Note that
+#' a `sample_table` list element will be added (data frame) with `files` and `names` as
+#' columns (based on input data).
+#'
 #' @export
 #'
 #'
-import_rsem_files <- function(
+tximport_rsem_files <- function(
     files = ".",
     names = NULL,
     txIn = FALSE,

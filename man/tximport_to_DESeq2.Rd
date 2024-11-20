@@ -4,7 +4,7 @@
 \alias{tximport_to_DESeq2}
 \title{Import tximport list to DESeq2 object}
 \usage{
-tximport_to_DESeq2(x, gene_annotation = NULL)
+tximport_to_DESeq2(x)
 }
 \arguments{
 \item{x}{The tximport list from \code{\link[tximport:tximport]{tximport::tximport()}}}

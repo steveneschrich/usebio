@@ -14,5 +14,15 @@ the \link{usethis} package.
 
 The GTF files (for gencode) have information at the gene, transcript and
 exon levels. It is possible to get an object with all of these, or with
-only data at one of these levels.
+only data at one of these levels. These functions make the process slightly
+easier.
+
+\emph{Caching}: Since the files in question are large, one of the things that
+this package does is provide caching (via BiocFileCache) of the files for
+subsequent loads. Hopefully, it is often the case that the same file would
+be needed multiple times.
+
+Finally, although not very well thought out, there is a function (import_gencode_gtf)
+which attempts to impose some logic on the process of inferring the right gencode
+file. It is very much a work in progress.
 }
