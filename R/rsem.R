@@ -128,7 +128,7 @@ tximport_to_DESeq2 <- function(x) {
 #'
 #' @examples
 annotate_rsem_rows <- function(x, gtf_url=NULL, which = c("gene","transcript")) {
-  which <- match.args(which)
+  which <- match.arg(which)
 
   # Retrieve gene/transcript-level annotation from the gtf
   g <- as.data.frame(gtf_annotation(gtf_url, feature.type = which))
