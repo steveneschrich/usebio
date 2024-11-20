@@ -4,7 +4,7 @@
 \alias{annotate_rsem_rows}
 \title{Title}
 \usage{
-annotate_rsem_rows(x, gtf_url, which = c("gene", "transcript"))
+annotate_rsem_rows(x, gtf_url = NULL, which = c("gene", "transcript"))
 }
 \arguments{
 \item{which}{}

@@ -4,7 +4,7 @@
 \alias{build_rsem_sample_table}
 \title{Generate a RSEM-based sample table based on a directory}
 \usage{
-build_rsem_sample_table(dir, which = c("genes", "isoforms"))
+build_rsem_sample_table(dir, which = c("gene", "transcript"))
 }
 \arguments{
 \item{dir}{The directory to look in for RSEM files.}

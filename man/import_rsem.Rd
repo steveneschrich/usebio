@@ -8,7 +8,7 @@ import_rsem(
   sample_table,
   which = c("gene", "transcript", "tx2gene"),
   tx2gene = NULL,
-  gene_annotation
+  gene_annotation = NULL
 )
 }
 \arguments{

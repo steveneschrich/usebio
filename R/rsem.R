@@ -1,63 +1,4 @@
 
-# Some notes:
-# ideally:
-# import_rsem(sample_table, formula, output_type=c("gene","tx2gene","tx"), formula=~1, gene_model = "")
-#
-# read files in
-
-
-#' Import RSEM as ExpressionSet
-#'
-#'  [Biobase::ExpressionSet] object (Counts, Normalized Counts and TPM).
-#' @param sample_table A data.frame of annotations and filenames
-#' @param formula A formula for DESeq (default is ~1)
-#' @param use_log Should the data be log2 transformed?
-#'
-#' @return A [Biobase::ExpressionSet] representing the RSEM data (with assayData for
-#' exprs (normalized counts), counts (raw counts) and TPM).
-#'
-#' @export
-#'
-#' @examples
-import_rsem_as_ExpressionSet <- function(sample_table, formula = ~1, use_log = TRUE) {
-  stopifnot(utils::hasName(sample_table, "filename"))
-
-  txi.rsem <- import_rsem(sample_table$filename)
-  dds <- normalize_rsem(txi.rsem, sample_table, formula)
-
-  # NB: The RSEM data does not have column names, so we need to label these
-  # and use the sample_table sample names (or basename) as the rownames.
-  if ( !utils::hasName(sample_table, "sample")) {
-    sample_table <- sample_table |>
-        dplyr::mutate(sample = stringr::str_remove(basename(sample_table$filename), ".genes.results"))
-  }
-
-  ad <- new.env()
-  ad$TPM <- txi.rsem$abundance |> magrittr::set_colnames(sample_table$sample)
-  ad$exprs <- DESeq2::counts(dds, normalized = TRUE) |> magrittr::set_colnames(sample_table$sample)
-  ad$counts <- DESeq2::counts(dds, normalized = FALSE) |> magrittr::set_colnames(sample_table$sample)
-
-  if ( use_log ) {
-    ad$TPM <- log2(ad$TPM + 1)
-    ad$exprs <- log2(ad$exprs + 1)
-    ad$counts <- log2(ad$counts + 1)
-  }
-  es <- Biobase::ExpressionSet(
-    assayData = ad,
-    phenoData = Biobase::AnnotatedDataFrame(
-      sample_table |>
-        tibble::column_to_rownames("sample") |>
-        as.data.frame()
-      ),
-    #    featureData = ?,
-    annotation = "gene"
-  )
-
-
-
-  es
-}
-
 
 #' Import RSEM as SummarizedExperiment
 #'
@@ -111,8 +52,8 @@ import_rsem_as_DESeqDataSet <- function(sample_table=".", txIn = FALSE, txOut = 
 
   # After all the preprocessing, we can import the results using the
   # filenames and sample names.
-  txi.rsem <- import_rsem(
-    files = sample_table$filename, sample_names = sample_table$sample,
+  txi.rsem <- import_rsem_files(
+    files = sample_table$filename, names = sample_table$sample,
     txIn = txIn, txOut = txOut
   )
 
@@ -186,7 +127,7 @@ tximport_to_DESeq2 <- function(x) {
 #' @export
 #'
 #' @examples
-annotate_rsem_rows <- function(x, gtf_url, which = c("gene","transcript")) {
+annotate_rsem_rows <- function(x, gtf_url=NULL, which = c("gene","transcript")) {
   which <- match.args(which)
 
   # Retrieve gene/transcript-level annotation from the gtf
@@ -303,10 +244,12 @@ import_rsem <- function(
     sample_table,
     which = c("gene","transcript","tx2gene"),
     tx2gene = NULL,
-    gene_annotation
+    gene_annotation = NULL
 ) {
 
-  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = gene_annotation)
+  which <- match.arg(which)
+
+  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = tx2gene)
   x <- usebio::tximport_to_DESeq2(x)
   x <- usebio::annotate_rsem_rows(
     x, gtf_url = gene_annotation,
@@ -379,7 +322,7 @@ tximport_rsem_files <- function(
 ) {
 
   # Select either gene-level or isoform-level input/output
-  which_input <- ifelse(txIn, "isoforms", "genes")
+  which_input <- ifelse(txIn, "transcript", "gene")
 
   # If files is length 1 and a directory, list the files.
   if ( length(files) == 1 && all(fs::is_dir(files) )) {
@@ -479,9 +422,16 @@ remove_empty_rows_from_rsem <- function(x, remove.lengths = TRUE, min.zero.obs =
 #' @export
 #'
 #' @examples
-find_rsem_files <- function(dir, which = c("genes","isoforms")) {
-  which <- match.arg(which, c("genes","isoforms"))
-  list.files(path = dir, pattern = sprintf("*.%s.results", which), full.names = TRUE)
+find_rsem_files <- function(dir, which = c("gene","transcript")) {
+  which <- match.arg(which)
+  list.files(
+    path = dir,
+    pattern = sprintf(
+      "*.%s.results",
+      ifelse(which=="gene","genes","isoforms"),
+      full.names = TRUE
+    )
+  )
 }
 
 
@@ -512,7 +462,7 @@ infer_rsem_samplename <- function(s) {
 #' @return A data.frame consisting of two columns `files` and `names`.
 #' @export
 #'
-build_rsem_sample_table <- function(dir, which = c("genes","isoforms")) {
+build_rsem_sample_table <- function(dir, which = c("gene","transcript")) {
   which <- match.arg(which)
 
   tibble::tibble(
@@ -552,7 +502,7 @@ add_colnames <- function(x, colnames) {
 #'
 infer_tx2gene_mapping <- function(files = ".") {
   if ( length(files) == 1 && all(fs::is_dir(files))) {
-    files <- find_rsem_files(files, which = "isoforms")
+    files <- find_rsem_files(files, which = "transcript")
   }
 
   # For all input files, read in the first two columns (transcript_id and gene_id).

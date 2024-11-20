@@ -4,7 +4,7 @@
 \alias{find_rsem_files}
 \title{Find RSEM files to load}
 \usage{
-find_rsem_files(dir, which = c("genes", "isoforms"))
+find_rsem_files(dir, which = c("gene", "transcript"))
 }
 \arguments{
 \item{dir}{A directory to look in}
