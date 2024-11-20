@@ -133,6 +133,14 @@ annotate_rsem_rows <- function(x, gtf_url=NULL, which = c("gene","transcript")) 
   # Retrieve gene/transcript-level annotation from the gtf
   g <- as.data.frame(gtf_annotation(gtf_url, feature.type = which))
 
+  g <- dplyr::rename(
+    g,
+    gene_seqnames = seqnames,
+    gene_start = start,
+    gene_end = end,
+    gene_width = width,
+    gene_strand = strand
+  )
   # Set annotation rownames to identifier (gene or transcript)
   rownames(g) <- g[[ifelse(which=="gene","gene_id","transcript_id")]]
   stopifnot(
