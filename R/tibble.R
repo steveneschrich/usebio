@@ -165,7 +165,7 @@ add_col_data <- function(x, coldata) {
   }
   tdf <- dplyr::left_join(tdf, coldata, by=".rownames",relationship="one-to-one")
 
-  SummarizedExperiment::col_data(x) <- tdf
+  col_data(x) <- tdf
   x
 }
 #' Title
@@ -185,7 +185,7 @@ add_row_data <- function(x, rowdata) {
   }
   tdf <- dplyr::left_join(tdf, rowdata, by=".rownames",relationship="one-to-one")
 
-  SummarizedExperiment::row_data(x) <- tdf
+  row_data(x) <- tdf
   x
 }
 
