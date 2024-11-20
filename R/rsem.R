@@ -428,10 +428,11 @@ find_rsem_files <- function(dir, which = c("gene","transcript")) {
     path = dir,
     pattern = sprintf(
       "*.%s.results",
-      ifelse(which=="gene","genes","isoforms"),
-      full.names = TRUE
-    )
+      ifelse(which=="gene","genes","isoforms")
+    ),
+    full.names = TRUE
   )
+
 }
 
 
