@@ -8,11 +8,9 @@ import_rsem(
   sample_table,
   which = c("gene", "transcript", "tx2gene"),
   tx2gene = NULL,
-  gene_annotation = NULL
+  gene_annotation = NULL,
+  importer = NULL
 )
-}
-\arguments{
-\item{gene_annotation}{}
 }
 \description{
 Title

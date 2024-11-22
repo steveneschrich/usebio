@@ -7,11 +7,9 @@
 tximport_rsem(
   sample_table,
   which = c("gene", "transcript", "tx2gene"),
-  tx2gene = NULL
+  tx2gene = NULL,
+  importer = NULL
 )
-}
-\arguments{
-\item{tx2gene}{}
 }
 \description{
 Import data from files using a sample table (with files and optionally names),

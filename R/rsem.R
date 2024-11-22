@@ -243,7 +243,7 @@ tximport_to_SummarizedExperiment <- function(x,col_data = NULL, row_data = NULL)
 #' @param which
 #' @param tx2gene
 #' @param gene_annotation
-#'
+#' @param importer
 #' @return
 #' @export
 #'
@@ -275,7 +275,7 @@ import_rsem <- function(
 #' @param sample_table
 #' @param which
 #' @param tx2gene
-#'
+#' @param importer
 #' @return
 #' @export
 #'
