@@ -252,12 +252,13 @@ import_rsem <- function(
     sample_table,
     which = c("gene","transcript","tx2gene"),
     tx2gene = NULL,
-    gene_annotation = NULL
+    gene_annotation = NULL,
+    importer = NULL
 ) {
 
   which <- match.arg(which)
 
-  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = tx2gene)
+  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = tx2gene, importer=importer)
   x <- usebio::tximport_to_DESeq2(x)
   x <- usebio::annotate_rsem_rows(
     x, gtf_url = gene_annotation,
@@ -278,13 +279,14 @@ import_rsem <- function(
 #' @return
 #' @export
 #'
-tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL) {
+tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL,importer=NULL) {
   tximport_rsem_files(
     files = sample_table[["files"]],
     names = sample_table[["names"]],
     txIn = which %in% c("transcript","tx2gene"),
     txOut = which %in% c("transcript"),
-    tx2gene_gtf = tx2gene
+    tx2gene_gtf = tx2gene,
+    importer = importer
   )
 }
 

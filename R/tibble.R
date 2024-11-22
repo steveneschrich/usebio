@@ -108,10 +108,22 @@ setMethod("col_data", "SummarizedExperiment",  function(x) {
 #' @rdname col_data-set
 #' @aliases `col_data<-`,SummarizedExperiment,ANY-method
 setMethod("col_data<-", "SummarizedExperiment", function(x, value) {
-  SummarizedExperiment::colData(x) <- as_DFrame.tibble(value)
-  x
+  set_col_data(x, value)
 })
 
+#' Title
+#'
+#' @param x
+#' @param value
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_col_data <- function(x, value) {
+  SummarizedExperiment::colData(x) <- as_DFrame.tibble(value)
+  x
+}
 
 #' Extract row data from an object
 #'
@@ -144,10 +156,22 @@ setMethod("row_data", "SummarizedExperiment", function(x) {
 #' @rdname row_data-set
 #' @aliases `row_data<-`,SummarizedExperiment,ANY-method
 setMethod("row_data<-", "SummarizedExperiment", function(x, value) {
-  SummarizedExperiment::rowData(x) <- as_DFrame.tibble(value)
-  x
+  set_row_data(x, value)
 })
 
+#' Title
+#'
+#' @param x
+#' @param value
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_row_data <- function(x, value) {
+  SummarizedExperiment::rowData(x) <- as_DFrame.tibble(value)
+  x
+}
 #' Title
 #'
 #' @param x
