@@ -258,7 +258,7 @@ import_rsem <- function(
 
   which <- match.arg(which)
 
-  x <- usebio::tximport_rsem(sample_list, which = which, tx2gene = tx2gene, importer=importer)
+  x <- usebio::tximport_rsem(sample_table, which = which, tx2gene = tx2gene, importer=importer)
   x <- usebio::tximport_to_DESeq2(x)
   x <- usebio::annotate_rsem_rows(
     x, gtf_url = gene_annotation,
