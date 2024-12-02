@@ -94,6 +94,3 @@ annotate_ensembl_transcripts <- function(x) {
 }
 
 
-tx2gene <- function(x) {
-
-}

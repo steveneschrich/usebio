@@ -364,7 +364,7 @@ tximport_rsem_files <- function(
     if ( is.null(tx2gene_gtf) )
       tx2gene_mapping <- infer_tx2gene_mapping(files)
     else {
-      tx2gene_mapping <- tx2gene(tx2gene_gtf)
+      tx2gene_mapping <- gtf_tx2gene(tx2gene_gtf)
     }
     x <- tximport::summarizeToGene(x, tx2gene = tx2gene_mapping)
   }
