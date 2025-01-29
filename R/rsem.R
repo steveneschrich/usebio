@@ -295,7 +295,7 @@ tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),t
   # The default for tximport_rsem_files is a simple sample table, but
   # we have the full one here. So we just replace the derived table
   # with what was passed (after verifying).
-  stopifnot(all(x[["sample_table"]] == sample_table$files))
+  stopifnot(all(x[["sample_table"]]$files == sample_table$files))
   x[["sample_table"]] <- sample_table
 
   x
