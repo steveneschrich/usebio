@@ -144,7 +144,6 @@ annotate_rsem_rows <- function(x, gtf_url=NULL, which = c("gene","transcript")) 
   # Set annotation rownames to identifier (gene or transcript)
   rownames(g) <- g[[ifelse(which=="gene","gene_id","transcript_id")]]
   stopifnot(
-    all(rownames(g) %in% rownames(x)),
     all(rownames(x) %in% rownames(g))
   )
   # Rearrange gene annotation relative to the experimental object
@@ -259,6 +258,11 @@ import_rsem <- function(
   which <- match.arg(which)
 
   x <- usebio::tximport_rsem(sample_table, which = which, tx2gene = tx2gene, importer=importer)
+
+  if ( which == "gene" ) {
+    x <- remove_empty_rows_from_rsem(x)
+  }
+
   x <- usebio::tximport_to_DESeq2(x)
   x <- usebio::annotate_rsem_rows(
     x, gtf_url = gene_annotation,
