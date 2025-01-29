@@ -284,7 +284,7 @@ import_rsem <- function(
 #' @export
 #'
 tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),tx2gene=NULL,importer=NULL) {
-  tximport_rsem_files(
+  x <- tximport_rsem_files(
     files = sample_table[["files"]],
     names = sample_table[["names"]],
     txIn = which %in% c("transcript","tx2gene"),
@@ -292,6 +292,13 @@ tximport_rsem <- function(sample_table, which=c("gene","transcript","tx2gene"),t
     tx2gene_gtf = tx2gene,
     importer = importer
   )
+  # The default for tximport_rsem_files is a simple sample table, but
+  # we have the full one here. So we just replace the derived table
+  # with what was passed (after verifying).
+  stopifnot(all(x$files == sample_table$files))
+  col_data(x) <- sample_table
+
+  x
 }
 
 #' Import RSEM data using tximport
